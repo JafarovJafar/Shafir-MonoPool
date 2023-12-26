@@ -3,27 +3,36 @@ using UnityEngine;
 
 namespace Shafir.MonoPool
 {
+    /*
+     * |-----------------------------------|
+     * |     MonoPool by Jafarov Jafar     |
+     * |-----------------------------------|
+     * | For poolable object:              |
+     * | 1. implement IPoolable interface  |
+     * | 2. ???                            |
+     * | 3. PROFIT!!!                      |
+     * | For pooling:                      |
+     * | 1. Use "Get" method to get        |
+     * |     object from pool              |
+     * | 2. User ReturnItem method to      |
+     * |     return object to pool         |
+     * |-----------------------------------|
+     * |               @2023               |
+     * |-----------------------------------| 
+    */
+
+
+
     /// <summary>
     /// Pool of objects
     /// </summary>
     public static class MonoPool
     {
+        // Containers for each pooled type
+        private static Dictionary<IPoolable, Transform> _containers;
+
         // Dictionary with all pooled objects
         private static Dictionary<IPoolable, List<IPoolable>> _pool = new Dictionary<IPoolable, List<IPoolable>>();
-
-        // Default parent for all poolable objects
-        private static Transform _parent;
-
-        /// <summary>
-        /// Fill pool with objects
-        /// </summary>
-        /// <param name="prefab">Goal prefab</param>
-        /// <param name="count">Count of prefabs to instantiate</param>
-        /// <param name="parent">Container for instantiated prefabs</param>
-        public static void Fill<T>(T prefab, int count, Transform parent) where T : MonoBehaviour, IPoolable
-        {
-            FillInternal(prefab, count, parent);
-        }
 
         /// <summary>
         /// Fill pool with objects
@@ -32,19 +41,13 @@ namespace Shafir.MonoPool
         /// <param name="count">Count of prefabs to instantiate</param>
         public static void Fill<T>(T prefab, int count) where T : MonoBehaviour, IPoolable
         {
-            FillInternal(prefab, count, _parent);
-        }
-
-        // internal method to fill pool
-        private static void FillInternal<T>(T prefab, int count, Transform parent) where T : MonoBehaviour, IPoolable
-        {
             // if there is no item in dictionary - creates new list
             if (!_pool.ContainsKey(prefab)) _pool.Add(prefab, new List<IPoolable>());
 
             for (int i = 0; i < count; i++)
             {
                 // create new item and deactivates it
-                T item = CreateItem(prefab, parent);
+                T item = CreateItem(prefab);
                 item.Deactivate();
             }
         }
@@ -55,23 +58,6 @@ namespace Shafir.MonoPool
         /// <param name="prefab">Goal prefab</param>
         /// <returns>Object from pool</returns>
         public static T Get<T>(T prefab) where T : MonoBehaviour, IPoolable
-        {
-            return GetInternal(prefab, _parent);
-        }
-
-        /// <summary>
-        /// Get object from pool and set parent
-        /// </summary>
-        /// <param name="prefab">Goal prefab</param>
-        /// <param name="parent">Goal parent for pooled object</param>
-        /// <returns>Object from pool</returns>
-        public static T Get<T>(T prefab, Transform parent) where T : MonoBehaviour, IPoolable
-        {
-            return GetInternal(prefab, parent);
-        }
-
-        // Internal method for getting object from pool
-        private static T GetInternal<T>(T prefab, Transform parent) where T : MonoBehaviour, IPoolable
         {
             T result;
 
@@ -87,22 +73,50 @@ namespace Shafir.MonoPool
             // if where is no inactive object - creates a new one
             if (result is null)
             {
-                result = CreateItem(prefab, parent);
+                result = CreateItem(prefab);
             }
 
-            // sets parent to new object
-            result.SetParent(parent);
-            
             // activates object
             result.Activate();
 
             return result;
         }
 
-        // internal method for creating new objects
-        private static T CreateItem<T>(T prefab, Transform parent) where T : MonoBehaviour, IPoolable
+        /// <summary>
+        /// Return object to pool
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="prefab">Object to return</param>
+        public static void ReturnItem<T>(T prefab) where T : MonoBehaviour, IPoolable
         {
-            T instantiatedItem = Object.Instantiate(prefab, parent);
+            // generates new container if there is no one for prefab
+            if (!_containers.TryGetValue(prefab, out var container))
+            {
+                Debug.LogWarning("Incorrent return attempt!");
+
+                container = new GameObject().transform;
+                container.name = prefab.name;
+
+                _containers.Add(prefab, container);
+            }
+
+            prefab.Deactivate();
+            prefab.transform.SetParent(container);
+        }
+
+        // internal method for creating new objects
+        private static T CreateItem<T>(T prefab) where T : MonoBehaviour, IPoolable
+        {
+            // generates new container if there is no one for prefab
+            if (!_containers.TryGetValue(prefab, out var container))
+            {
+                container = new GameObject().transform;
+                container.name = prefab.name;
+
+                _containers.Add(prefab, container);
+            }
+
+            T instantiatedItem = Object.Instantiate(prefab, container);
             _pool[prefab].Add(instantiatedItem);
 
             return instantiatedItem;
