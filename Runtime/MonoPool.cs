@@ -87,7 +87,7 @@ namespace Shafir.MonoPool
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="prefab">Object to return</param>
-        public static void ReturnItem<T>(T prefab) where T : MonoBehaviour, IPoolable
+        public static void Return<T>(T prefab) where T : MonoBehaviour, IPoolable
         {
             // generates new container if there is no one for prefab
             if (!_containers.TryGetValue(prefab, out var container))
