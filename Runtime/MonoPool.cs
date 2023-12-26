@@ -32,7 +32,7 @@ namespace Shafir.MonoPool
         private static Dictionary<IPoolable, Transform> _containers;
 
         // Dictionary with all pooled objects
-        private static Dictionary<IPoolable, List<IPoolable>> _pool = new Dictionary<IPoolable, List<IPoolable>>();
+        private static Dictionary<IPoolable, List<IPoolable>> _objectsDict = new Dictionary<IPoolable, List<IPoolable>>();
 
         /// <summary>
         /// Fill pool with objects
@@ -42,7 +42,7 @@ namespace Shafir.MonoPool
         public static void Fill<T>(T prefab, int count) where T : MonoBehaviour, IPoolable
         {
             // if there is no item in dictionary - creates new list
-            if (!_pool.ContainsKey(prefab)) _pool.Add(prefab, new List<IPoolable>());
+            if (!_objectsDict.ContainsKey(prefab)) _objectsDict.Add(prefab, new List<IPoolable>());
 
             for (int i = 0; i < count; i++)
             {
@@ -62,13 +62,13 @@ namespace Shafir.MonoPool
             T result;
 
             // if where is no item in dictionary - create new list
-            if (!_pool.ContainsKey(prefab))
+            if (!_objectsDict.ContainsKey(prefab))
             {
-                _pool.Add(prefab, new List<IPoolable>());
+                _objectsDict.Add(prefab, new List<IPoolable>());
             }
 
             // finds inactive object in list
-            result = _pool[prefab].Find(x => !x.IsActive) as T;
+            result = _objectsDict[prefab].Find(x => !x.IsActive) as T;
 
             // if where is no inactive object - creates a new one
             if (result is null)
@@ -117,7 +117,7 @@ namespace Shafir.MonoPool
             }
 
             T instantiatedItem = Object.Instantiate(prefab, container);
-            _pool[prefab].Add(instantiatedItem);
+            _objectsDict[prefab].Add(instantiatedItem);
 
             return instantiatedItem;
         }
