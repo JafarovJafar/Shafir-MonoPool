@@ -42,7 +42,10 @@ namespace Shafir.MonoPool
         public static void Fill<T>(T prefab, int count) where T : MonoBehaviour, IPoolable
         {
             // if there is no item in dictionary - creates new list
-            if (!_objectsDict.ContainsKey(prefab)) _objectsDict.Add(prefab, new List<IPoolable>());
+            if (!_objectsDict.ContainsKey(prefab))
+            {
+                _objectsDict.Add(prefab, new List<IPoolable>());
+            }
 
             for (int i = 0; i < count; i++)
             {
