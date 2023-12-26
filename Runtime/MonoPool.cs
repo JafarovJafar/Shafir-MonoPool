@@ -1,24 +1,24 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Shafir.MonoPool
 {
     /*
-     * |-----------------------------------|
-     * |     MonoPool by Jafarov Jafar     |
-     * |-----------------------------------|
-     * | For poolable object:              |
-     * | 1. implement IPoolable interface  |
-     * | 2. ???                            |
-     * | 3. PROFIT!!!                      |
-     * | For pooling:                      |
-     * | 1. Use "Get" method to get        |
-     * |     object from pool              |
-     * | 2. User ReturnItem method to      |
-     * |     return object to pool         |
-     * |-----------------------------------|
-     * |               @2023               |
-     * |-----------------------------------| 
+     * ┌───────────────────────────────────┐
+     * │     MonoPool by Jafarov Jafar     │
+     * ├───────────────────────────────────┤
+     * │ For poolable object:              │
+     * │ 1. Implement IPoolable interface  │
+     * │ 2. ???                            │
+     * │ 3. PROFIT!!!                      │
+     * │ For pooling:                      │
+     * │ 1. Use "Get" method to get        │
+     * │     object from pool              │
+     * │ 2. User ReturnItem method to      │
+     * │     return object to pool         │
+     * ├──────────────────────────────────-┤
+     * │               @2023               │
+     * └───────────────────────────────────┘
     */
 
 
