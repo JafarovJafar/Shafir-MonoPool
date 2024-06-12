@@ -34,6 +34,12 @@ namespace Shafir.MonoPool
         // Dictionary with all pooled objects
         private static Dictionary<IPoolable, List<IPoolable>> _objectsDict = new Dictionary<IPoolable, List<IPoolable>>();
 
+        // Root container with all containers for each prefab
+        private static Transform _rootContainer;
+
+        // Dictionary for connecting instantiated items and prefab
+        private static Dictionary<IPoolable, IPoolable> _itemToPrefabLink = new Dictionary<IPoolable, IPoolable>();
+
         /// <summary>
         /// Fill pool with objects
         /// </summary>
@@ -50,8 +56,8 @@ namespace Shafir.MonoPool
             for (int i = 0; i < count; i++)
             {
                 // create new item and deactivates it
-                T item = CreateItem(prefab);
-                item.Deactivate();
+                var item = Get(prefab);
+                Return(item);
             }
         }
 
@@ -60,7 +66,14 @@ namespace Shafir.MonoPool
         /// </summary>
         /// <param name="prefab">Goal prefab</param>
         /// <returns>Object from pool</returns>
-        public static T Get<T>(T prefab) where T : MonoBehaviour, IPoolable
+        public static T Get<T>(T prefab) where T : MonoBehaviour, IPoolable => Get(prefab, null);
+
+        /// <summary>
+        /// Get object from pool
+        /// </summary>
+        /// <param name="prefab">Goal prefab</param>
+        /// <returns>Object from pool</returns>
+        public static T Get<T>(T prefab, Transform container) where T : MonoBehaviour, IPoolable
         {
             T result;
 
@@ -79,6 +92,11 @@ namespace Shafir.MonoPool
                 result = CreateItem(prefab);
             }
 
+            if (container != null)
+            {
+                result.transform.SetParent(container);
+            }
+
             // activates object
             result.Activate();
 
@@ -89,9 +107,11 @@ namespace Shafir.MonoPool
         /// Return object to pool
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="prefab">Object to return</param>
-        public static void Return<T>(T prefab) where T : MonoBehaviour, IPoolable
+        /// <param name="item">Object to return</param>
+        public static void Return<T>(T item) where T : MonoBehaviour, IPoolable
         {
+            T prefab = _itemToPrefabLink[item] as T;
+
             // generates new container if there is no one for prefab
             if (!_containers.TryGetValue(prefab, out var container))
             {
@@ -103,24 +123,31 @@ namespace Shafir.MonoPool
                 _containers.Add(prefab, container);
             }
 
-            prefab.Deactivate();
-            prefab.transform.SetParent(container);
+            item.DeActivate();
+            item.transform.SetParent(container);
         }
 
         // internal method for creating new objects
         private static T CreateItem<T>(T prefab) where T : MonoBehaviour, IPoolable
         {
+            if (_rootContainer == null)
+            {
+                _rootContainer = new GameObject("----- Shafir MonoPool -----").transform;
+            }
+
             // generates new container if there is no one for prefab
             if (!_containers.TryGetValue(prefab, out var container))
             {
                 container = new GameObject().transform;
                 container.name = prefab.name;
+                container.SetParent(_rootContainer);
 
                 _containers.Add(prefab, container);
             }
 
             T instantiatedItem = Object.Instantiate(prefab, container);
             _objectsDict[prefab].Add(instantiatedItem);
+            _itemToPrefabLink.Add(instantiatedItem, prefab);
 
             return instantiatedItem;
         }

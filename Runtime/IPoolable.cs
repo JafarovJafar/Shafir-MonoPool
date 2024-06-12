@@ -28,6 +28,6 @@
         /// <remarks>
         /// Implement goal behaviour for object when return to pool 
         /// </remarks>
-        void Deactivate();
+        void DeActivate();
     }
 }
