@@ -26,7 +26,7 @@ namespace Shafir.MonoPool
     /// <summary>
     /// Pool of objects
     /// </summary>
-    public static class MonoPool
+    public static class ShafirMonoPool
     {
         // Containers for each pooled type
         private static Dictionary<IPoolable, Transform> _containers = new Dictionary<IPoolable, Transform>();
